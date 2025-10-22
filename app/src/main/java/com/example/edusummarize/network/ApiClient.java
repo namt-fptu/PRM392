@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ApiClient {
 
-    private static final String BASE_URL = "https://api.example.com/";
+    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
