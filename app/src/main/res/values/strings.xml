@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EduSummarize</string>
+
+    <!-- Login & Register -->
+    <string name="login">Đăng nhập</string>
+    <string name="register">Đăng ký</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+
+    <!-- Home -->
+    <string name="home">Trang chủ</string>
+    <string name="scan_document">Quét tài liệu</string>
+    <string name="library">Thư viện</string>
+
+    <!-- Summarize -->
+    <string name="choose_source">Chọn nguồn tài liệu</string>
+    <string name="camera">Chụp ảnh</string>
+    <string name="gallery">Thư viện ảnh</string>
+    <string name="pdf_file">File PDF</string>
+    <string name="docx_file">File DOCX</string>
+    <string name="summarize">Tóm tắt</string>
+    <string name="create_audio">Tạo audio và lưu</string>
+
+    <!-- Common -->
+    <string name="cancel">Hủy</string>
+    <string name="ok">OK</string>
+    <string name="close">Đóng</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="search">Tìm kiếm</string>
+</resources>

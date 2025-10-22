@@ -1,0 +1,162 @@
+package com.example.edusummarize.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.edusummarize.R;
+import com.example.edusummarize.model.Summary;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Locale;
+
+public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHolder> {
+
+    private Context context;
+    private List<Summary> summaryList;
+    private ExoPlayer exoPlayer;
+    private int currentPlayingPosition = -1;
+
+    public SummaryAdapter(Context context, List<Summary> summaryList) {
+        this.context = context;
+        this.summaryList = summaryList;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_summary, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Summary summary = summaryList.get(position);
+
+        holder.tvTitle.setText(summary.getTitle());
+
+        if (summary.getCreatedAt() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            String date = sdf.format(summary.getCreatedAt().toDate());
+            holder.tvDate.setText(date);
+        }
+
+        // Truncate summary text for preview
+        String summaryPreview = summary.getSummaryText();
+        if (summaryPreview.length() > 100) {
+            summaryPreview = summaryPreview.substring(0, 100) + "...";
+        }
+        holder.tvSummary.setText(summaryPreview);
+
+        // Update play button based on playing state
+        if (position == currentPlayingPosition && exoPlayer != null && exoPlayer.isPlaying()) {
+            holder.btnPlay.setImageResource(R.drawable.ic_pause);
+        } else {
+            holder.btnPlay.setImageResource(R.drawable.ic_play);
+        }
+
+        holder.btnPlay.setOnClickListener(v -> {
+            if (position == currentPlayingPosition && exoPlayer != null && exoPlayer.isPlaying()) {
+                pauseAudio();
+                holder.btnPlay.setImageResource(R.drawable.ic_play);
+            } else {
+                playAudio(summary.getAudioUrl(), position);
+                notifyDataSetChanged();
+            }
+        });
+
+        holder.itemView.setOnClickListener(v -> showSummaryDetail(summary));
+    }
+
+    @Override
+    public int getItemCount() {
+        return summaryList.size();
+    }
+
+    private void playAudio(String audioUrl, int position) {
+        if (exoPlayer != null) {
+            exoPlayer.stop();
+            exoPlayer.release();
+        }
+
+        exoPlayer = new ExoPlayer.Builder(context).build();
+        MediaItem mediaItem = MediaItem.fromUri(audioUrl);
+        exoPlayer.setMediaItem(mediaItem);
+        exoPlayer.prepare();
+        exoPlayer.play();
+
+        currentPlayingPosition = position;
+
+        exoPlayer.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int playbackState) {
+                if (playbackState == Player.STATE_ENDED) {
+                    currentPlayingPosition = -1;
+                    notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    private void pauseAudio() {
+        if (exoPlayer != null) {
+            exoPlayer.pause();
+        }
+    }
+
+    public void releasePlayer() {
+        if (exoPlayer != null) {
+            exoPlayer.release();
+            exoPlayer = null;
+        }
+    }
+
+    private void showSummaryDetail(Summary summary) {
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_summary_detail, null);
+
+        TextView tvTitle = dialogView.findViewById(R.id.tv_dialog_title);
+        TextView tvDate = dialogView.findViewById(R.id.tv_dialog_date);
+        TextView tvOriginal = dialogView.findViewById(R.id.tv_dialog_original);
+        TextView tvSummary = dialogView.findViewById(R.id.tv_dialog_summary);
+
+        tvTitle.setText(summary.getTitle());
+
+        if (summary.getCreatedAt() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            tvDate.setText(sdf.format(summary.getCreatedAt().toDate()));
+        }
+
+        tvOriginal.setText(summary.getOriginalText());
+        tvSummary.setText(summary.getSummaryText());
+
+        new MaterialAlertDialogBuilder(context)
+                .setView(dialogView)
+                .setPositiveButton("Đóng", null)
+                .show();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle, tvDate, tvSummary;
+        ImageButton btnPlay;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+            tvTitle = itemView.findViewById(R.id.tv_title);
+            tvDate = itemView.findViewById(R.id.tv_date);
+            tvSummary = itemView.findViewById(R.id.tv_summary);
+            btnPlay = itemView.findViewById(R.id.btn_play);
+        }
+    }
+}
