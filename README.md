@@ -36,8 +36,6 @@ Open the project in Android Studio
 
 Add your Firebase config file:
 
-bash
-Sao chép mã
 app/google-services.json
 Build and run the app 🚀
 
