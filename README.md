@@ -31,4 +31,41 @@ It uses AI text summarization and Text-to-Speech (TTS) to make studying faster a
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-username>/EduSummarize.git
+   git clone https://github.com/namt-fptu/PRM392.git
+Open the project in Android Studio
+
+Add your Firebase config file:
+
+bash
+Sao chép mã
+app/google-services.json
+Build and run the app 🚀
+
+📱 Requirements
+Android Studio Hedgehog or newer
+
+minSdkVersion 26
+
+Internet connection for AI summarization
+
+📄 License
+This project is licensed under the MIT License – free for personal and educational use.
+
+🌟 Contributing
+Contributions are welcome!
+If you’d like to improve this project, please:
+
+Fork the repo
+
+Create a new branch (feature/your-feature-name)
+
+Submit a pull request
+
+🧑‍💻 Author
+Your Name
+📧 Contact: [namntse181772@fpt.edu.vn]
+🌐 GitHub: https://github.com/namt-fptu
+
+💬 EduSummarize – Learn smarter, not harder.
+
+---
