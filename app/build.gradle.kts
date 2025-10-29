@@ -55,7 +55,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // Firebase BOM
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")

@@ -1,44 +1,26 @@
 {
   "project_info": {
-    "project_number": "835004936509",
-    "project_id": "edusummarize-6f11e",
-    "storage_bucket": "edusummarize-6f11e.firebasestorage.app"
+    "project_number": "529506782811",
+    "project_id": "prm392-edusummarize",
+    "storage_bucket": "prm392-edusummarize.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:835004936509:android:09921467d64c805a575554",
+        "mobilesdk_app_id": "1:529506782811:android:be5560e5a89abf682cf97e",
         "android_client_info": {
           "package_name": "com.example.edusummarize"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "835004936509-92d9l1iro7kr2ihdm5k3n31opri508ks.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.edusummarize",
-            "certificate_hash": "ba625ecefb49ca96d208fcb0f8aa4d707480810b"
-          }
-        },
-        {
-          "client_id": "835004936509-iu0sra4rsk8bs1nrumc4r2odhkmhk6vv.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBKBvKU-uyAwPcsij3BGmWRZmLa5at709w"
+          "current_key": "AIzaSyAWuslOgrjcZ56tckfYa4PsvpWwwUZPTII"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "835004936509-iu0sra4rsk8bs1nrumc4r2odhkmhk6vv.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
