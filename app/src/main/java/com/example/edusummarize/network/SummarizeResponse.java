@@ -1,31 +1,55 @@
 package com.example.edusummarize.network;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 public class SummarizeResponse {
 
-    @SerializedName("summary")
-    private String summary;
+    @SerializedName("candidates")
+    private List<Candidate> candidates;
 
-    @SerializedName("status")
-    private String status;
+    public static class Candidate {
+        @SerializedName("content")
+        private Content content;
 
-    public SummarizeResponse() {
+        public Content getContent() {
+            return content;
+        }
+    }
+
+    public static class Content {
+        @SerializedName("parts")
+        private List<Part> parts;
+
+        public List<Part> getParts() {
+            return parts;
+        }
+    }
+
+    public static class Part {
+        @SerializedName("text")
+        private String text;
+
+        public String getText() {
+            return text;
+        }
     }
 
     public String getSummary() {
-        return summary;
+        if (candidates != null && !candidates.isEmpty() &&
+            candidates.get(0).getContent() != null &&
+            candidates.get(0).getContent().getParts() != null &&
+            !candidates.get(0).getContent().getParts().isEmpty()) {
+            return candidates.get(0).getContent().getParts().get(0).getText();
+        }
+        return null;
     }
 
-    public void setSummary(String summary) {
-        this.summary = summary;
+    public List<Candidate> getCandidates() {
+        return candidates;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCandidates(List<Candidate> candidates) {
+        this.candidates = candidates;
     }
 }

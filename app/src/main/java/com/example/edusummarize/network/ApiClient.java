@@ -8,12 +8,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Retrofit API Client
- * TODO: Replace YOUR_API_KEY with your actual API key in SummarizerService
+ * Retrofit API Client for Google AI Studio Gemini API
  */
 public class ApiClient {
 
-    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent/";
+    private static final String BASE_URL = "https://generativelanguage.googleapis.com/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {

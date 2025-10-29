@@ -6,15 +6,13 @@ import retrofit2.http.Headers;
 import retrofit2.http.POST;
 
 /**
- * Retrofit Service Interface for AI Summarization API
- * TODO: Replace YOUR_API_KEY with your actual API key
+ * Retrofit Service Interface for Google AI Studio Gemini API
  */
 public interface SummarizerService {
 
     @Headers({
-            "Content-Type: application/json",
-            "Authorization: Bearer AIzaSyAiI2W81wzjNFbovEVA3oTPU-nH6hslO5A"
+            "Content-Type: application/json"
     })
-    @POST("summarize")
+    @POST("v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyD59H43haomG44WChIcHMI-c7naYUvCm88")
     Call<SummarizeResponse> summarize(@Body SummarizeRequest request);
 }

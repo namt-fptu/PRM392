@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -277,7 +278,7 @@ public class SummarizeActivity extends AppCompatActivity {
         btnSummarize.setEnabled(false);
 
         SummarizerService service = ApiClient.getSummarizerService();
-        SummarizeRequest request = new SummarizeRequest(extractedText, 500);
+        SummarizeRequest request = new SummarizeRequest(extractedText);
 
         service.summarize(request).enqueue(new Callback<SummarizeResponse>() {
             @Override
@@ -288,11 +289,27 @@ public class SummarizeActivity extends AppCompatActivity {
 
                 if (response.isSuccessful() && response.body() != null) {
                     summaryText = response.body().getSummary();
-                    displaySummary(summaryText);
+                    if (summaryText != null && !summaryText.isEmpty()) {
+                        displaySummary(summaryText);
+                    } else {
+                        Toast.makeText(SummarizeActivity.this,
+                                "API trả về kết quả rỗng. Vui lòng thử lại.",
+                                Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(SummarizeActivity.this,
-                            "Lỗi khi tóm tắt: " + response.code(),
-                            Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Lỗi khi tóm tắt";
+                    if (response.code() == 400) {
+                        errorMsg = "Dữ liệu không hợp lệ";
+                    } else if (response.code() == 401) {
+                        errorMsg = "API key không hợp lệ";
+                    } else if (response.code() == 403) {
+                        errorMsg = "Không có quyền truy cập API";
+                    } else if (response.code() == 429) {
+                        errorMsg = "Đã vượt quá giới hạn API, vui lòng thử lại sau";
+                    } else {
+                        errorMsg = "Lỗi khi tóm tắt: " + response.code();
+                    }
+                    Toast.makeText(SummarizeActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -300,9 +317,19 @@ public class SummarizeActivity extends AppCompatActivity {
             public void onFailure(@NonNull Call<SummarizeResponse> call, @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnSummarize.setEnabled(true);
-                Toast.makeText(SummarizeActivity.this,
-                        "Lỗi kết nối: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+
+                String errorMessage = "Lỗi kết nối";
+                if (t.getMessage() != null) {
+                    if (t.getMessage().contains("timeout")) {
+                        errorMessage = "Kết nối bị timeout, vui lòng thử lại";
+                    } else if (t.getMessage().contains("Unable to resolve host")) {
+                        errorMessage = "Không có kết nối internet";
+                    } else {
+                        errorMessage = "Lỗi: " + t.getMessage();
+                    }
+                }
+
+                Toast.makeText(SummarizeActivity.this, errorMessage, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -349,6 +376,14 @@ public class SummarizeActivity extends AppCompatActivity {
     }
 
     private void uploadAudioAndSaveSummary(String title, File audioFile) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                btnCreateAudio.setEnabled(true);
+                Toast.makeText(this, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            });
+            return;
+        }
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         firebaseRepository.uploadAudio(audioFile, new FirebaseRepository.UploadCallback() {
@@ -399,12 +434,111 @@ public class SummarizeActivity extends AppCompatActivity {
 
             @Override
             public void onError(String error) {
-                runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    btnCreateAudio.setEnabled(true);
-                    Toast.makeText(SummarizeActivity.this,
-                            "Lỗi upload audio: " + error,
-                            Toast.LENGTH_SHORT).show();
+                // If main upload fails, try alternative upload method
+                Log.w("SummarizeActivity", "Main upload failed, trying alternative method: " + error);
+
+                firebaseRepository.uploadAudioSimple(audioFile, new FirebaseRepository.UploadCallback() {
+                    @Override
+                    public void onSuccess(String audioUrl) {
+                        Log.d("SummarizeActivity", "Alternative upload successful: " + audioUrl);
+
+                        Summary summary = new Summary(
+                                null,
+                                userId,
+                                title,
+                                extractedText,
+                                summaryText,
+                                audioUrl,
+                                Timestamp.now()
+                        );
+
+                        firebaseRepository.saveSummary(summary, new FirebaseRepository.SaveCallback() {
+                            @Override
+                            public void onSuccess(String documentId) {
+                                runOnUiThread(() -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    btnCreateAudio.setEnabled(true);
+
+                                    new MaterialAlertDialogBuilder(SummarizeActivity.this)
+                                            .setTitle("Thành công!")
+                                            .setMessage("Tóm tắt và audio đã được lưu vào thư viện (phương thức dự phòng)")
+                                            .setPositiveButton("Xem thư viện", (dialog, which) -> {
+                                                Intent intent = new Intent(SummarizeActivity.this, LibraryActivity.class);
+                                                startActivity(intent);
+                                                finish();
+                                            })
+                                            .setNegativeButton("Ở lại", null)
+                                            .show();
+                                });
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                runOnUiThread(() -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    btnCreateAudio.setEnabled(true);
+                                    Toast.makeText(SummarizeActivity.this,
+                                            "Lỗi lưu dữ liệu (dự phòng): " + error,
+                                            Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(String alternativeError) {
+                        runOnUiThread(() -> {
+                            progressBar.setVisibility(View.GONE);
+                            btnCreateAudio.setEnabled(true);
+
+                            // Offer to save without audio
+                            new MaterialAlertDialogBuilder(SummarizeActivity.this)
+                                    .setTitle("Lỗi Upload Audio")
+                                    .setMessage("Không thể upload file audio.\n\nLỗi chính: " + error +
+                                              "\nLỗi dự phòng: " + alternativeError +
+                                              "\n\nBạn có muốn lưu tóm tắt mà không có audio không?")
+                                    .setPositiveButton("Lưu không có audio", (dialog, which) -> {
+                                        progressBar.setVisibility(View.VISIBLE);
+
+                                        firebaseRepository.saveSummaryWithoutAudio(
+                                                userId,
+                                                title,
+                                                extractedText,
+                                                summaryText,
+                                                new FirebaseRepository.SaveCallback() {
+                                            @Override
+                                            public void onSuccess(String documentId) {
+                                                runOnUiThread(() -> {
+                                                    progressBar.setVisibility(View.GONE);
+
+                                                    new MaterialAlertDialogBuilder(SummarizeActivity.this)
+                                                            .setTitle("Thành công!")
+                                                            .setMessage("Tóm tắt đã được lưu vào thư viện (không có audio)")
+                                                            .setPositiveButton("Xem thư viện", (d, w) -> {
+                                                                Intent intent = new Intent(SummarizeActivity.this, LibraryActivity.class);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            })
+                                                            .setNegativeButton("Ở lại", null)
+                                                            .show();
+                                                });
+                                            }
+
+                                            @Override
+                                            public void onError(String saveError) {
+                                                runOnUiThread(() -> {
+                                                    progressBar.setVisibility(View.GONE);
+                                                    Toast.makeText(SummarizeActivity.this,
+                                                            "Lỗi lưu tóm tắt: " + saveError,
+                                                            Toast.LENGTH_SHORT).show();
+                                                });
+                                            }
+                                        });
+                                    })
+                                    .setNegativeButton("Hủy", null)
+                                    .show();
+                        });
+                    }
                 });
             }
         });

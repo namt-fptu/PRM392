@@ -4,10 +4,11 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,9 +25,10 @@ import java.util.List;
 
 public class LibraryActivity extends AppCompatActivity {
 
-    private EditText etSearch;
+    private TextInputEditText etSearch;
     private RecyclerView recyclerView;
     private TextView tvEmpty;
+    private View emptyContainer;
     private ProgressBar progressBar;
 
     private SummaryAdapter adapter;
@@ -58,6 +60,7 @@ public class LibraryActivity extends AppCompatActivity {
         etSearch = findViewById(R.id.et_search);
         recyclerView = findViewById(R.id.recycler_view);
         tvEmpty = findViewById(R.id.tv_empty);
+        emptyContainer = findViewById(R.id.empty_container);
         progressBar = findViewById(R.id.progress_bar);
     }
 
@@ -85,8 +88,13 @@ public class LibraryActivity extends AppCompatActivity {
     private void loadSummaries() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
-        tvEmpty.setVisibility(View.GONE);
+        emptyContainer.setVisibility(View.GONE);
 
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         firebaseRepository.getSummaries(userId, new FirebaseRepository.LoadCallback() {
@@ -100,10 +108,10 @@ public class LibraryActivity extends AppCompatActivity {
                     filteredList.addAll(summaries);
 
                     if (summaries.isEmpty()) {
-                        tvEmpty.setVisibility(View.VISIBLE);
+                        emptyContainer.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     } else {
-                        tvEmpty.setVisibility(View.GONE);
+                        emptyContainer.setVisibility(View.GONE);
                         recyclerView.setVisibility(View.VISIBLE);
                         adapter.notifyDataSetChanged();
                     }
@@ -114,7 +122,7 @@ public class LibraryActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    tvEmpty.setVisibility(View.VISIBLE);
+                    emptyContainer.setVisibility(View.VISIBLE);
                     tvEmpty.setText("Lỗi tải dữ liệu: " + error);
                     Toast.makeText(LibraryActivity.this, error, Toast.LENGTH_SHORT).show();
                 });
@@ -140,11 +148,11 @@ public class LibraryActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
 
         if (filteredList.isEmpty() && !summaryList.isEmpty()) {
-            tvEmpty.setVisibility(View.VISIBLE);
+            emptyContainer.setVisibility(View.VISIBLE);
             tvEmpty.setText("Không tìm thấy kết quả");
             recyclerView.setVisibility(View.GONE);
         } else {
-            tvEmpty.setVisibility(View.GONE);
+            emptyContainer.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
         }
     }

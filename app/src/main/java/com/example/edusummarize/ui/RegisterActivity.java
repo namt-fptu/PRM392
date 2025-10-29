@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.edusummarize.R;
+import com.example.edusummarize.utils.FirebaseAuthDebug;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -57,6 +58,11 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError("Email không đúng định dạng");
+            return;
+        }
+
         if (TextUtils.isEmpty(password)) {
             etPassword.setError("Mật khẩu không được để trống");
             return;
@@ -86,11 +92,32 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
-                        String errorMessage = task.getException() != null ?
-                                task.getException().getMessage() : "Đăng ký thất bại";
-                        Toast.makeText(RegisterActivity.this, errorMessage,
-                                Toast.LENGTH_LONG).show();
+                        FirebaseAuthDebug.logError("Registration failed", task.getException());
+                        handleRegistrationError(task.getException());
                     }
                 });
+    }
+
+    private void handleRegistrationError(Exception exception) {
+        String errorMessage = "Đăng ký thất bại";
+
+        if (exception != null) {
+            String error = exception.getMessage();
+            if (error != null) {
+                if (error.contains("email-already-in-use")) {
+                    errorMessage = "Email này đã được sử dụng";
+                } else if (error.contains("invalid-email")) {
+                    errorMessage = "Email không hợp lệ";
+                } else if (error.contains("weak-password")) {
+                    errorMessage = "Mật khẩu quá yếu";
+                } else if (error.contains("network error") || error.contains("network")) {
+                    errorMessage = "Lỗi kết nối mạng";
+                } else {
+                    errorMessage = "Đăng ký thất bại: " + error;
+                }
+            }
+        }
+
+        Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
     }
 }

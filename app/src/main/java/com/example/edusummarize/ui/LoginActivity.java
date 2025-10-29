@@ -3,6 +3,7 @@ package com.example.edusummarize.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.edusummarize.R;
+import com.example.edusummarize.utils.FirebaseAuthDebug;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -30,6 +32,9 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+
+        // Debug Firebase Auth status
+        FirebaseAuthDebug.logAuthStatus();
 
         // Check if user is already logged in
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -67,6 +72,11 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError("Email không đúng định dạng");
+            return;
+        }
+
         if (TextUtils.isEmpty(password)) {
             etPassword.setError("Mật khẩu không được để trống");
             return;
@@ -80,22 +90,51 @@ public class LoginActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
+        Log.d("LoginActivity", "Attempting login with email: " + email);
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     progressBar.setVisibility(View.GONE);
                     btnLogin.setEnabled(true);
 
                     if (task.isSuccessful()) {
+                        Log.d("LoginActivity", "Login successful");
                         Toast.makeText(LoginActivity.this, "Đăng nhập thành công!",
                                 Toast.LENGTH_SHORT).show();
                         navigateToHome();
                     } else {
-                        String errorMessage = task.getException() != null ?
-                                task.getException().getMessage() : "Đăng nhập thất bại";
-                        Toast.makeText(LoginActivity.this, errorMessage,
-                                Toast.LENGTH_LONG).show();
+                        FirebaseAuthDebug.logError("Login failed", task.getException());
+                        handleAuthError(task.getException());
                     }
                 });
+    }
+
+    private void handleAuthError(Exception exception) {
+        String errorMessage = "Đăng nhập thất bại";
+
+        if (exception != null) {
+            Log.e("LoginActivity", "Authentication failed", exception);
+            String error = exception.getMessage();
+            if (error != null) {
+                if (error.contains("password is invalid") || error.contains("wrong-password")) {
+                    errorMessage = "Mật khẩu không đúng";
+                } else if (error.contains("user-not-found") || error.contains("no user record")) {
+                    errorMessage = "Email chưa được đăng ký";
+                } else if (error.contains("invalid-email")) {
+                    errorMessage = "Email không hợp lệ";
+                } else if (error.contains("user-disabled")) {
+                    errorMessage = "Tài khoản đã bị vô hiệu hóa";
+                } else if (error.contains("too-many-requests")) {
+                    errorMessage = "Quá nhiều lần thử, vui lòng thử lại sau";
+                } else if (error.contains("network error") || error.contains("network")) {
+                    errorMessage = "Lỗi kết nối mạng";
+                } else {
+                    errorMessage = "Đăng nhập thất bại: " + error;
+                }
+            }
+        }
+
+        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
     }
 
     private void navigateToHome() {
