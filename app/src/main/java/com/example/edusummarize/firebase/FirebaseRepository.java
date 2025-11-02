@@ -68,10 +68,10 @@ public class FirebaseRepository {
     public FirebaseRepository() {
         firestore = FirebaseFirestore.getInstance();
 
-        // Initialize Firebase Storage with explicit bucket
+        // Initialize Firebase Storage with correct bucket from google-services.json
         try {
-            storage = FirebaseStorage.getInstance("gs://edusummarize-6f11e.firebasestorage.app");
-            Log.d(TAG, "Firebase Storage initialized with bucket: gs://edusummarize-6f11e.firebasestorage.app");
+            storage = FirebaseStorage.getInstance("gs://prm392-edusummarize.firebasestorage.app");
+            Log.d(TAG, "Firebase Storage initialized with bucket: gs://prm392-edusummarize.firebasestorage.app");
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize Firebase Storage with specific bucket, using default", e);
             storage = FirebaseStorage.getInstance();
