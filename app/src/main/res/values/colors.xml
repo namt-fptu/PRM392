@@ -4,6 +4,12 @@
     <color name="primary">#6366F1</color>
     <color name="primary_dark">#4F46E5</color>
     <color name="primary_light">#E0E7FF</color>
+    <color name="onPrimary">#FFFFFF</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#8B5CF6</color>
+    <color name="secondary_container">#EDE9FE</color>
+    <color name="on_secondary_container">#4C1D95</color>
 
     <!-- Accent Colors -->
     <color name="accent">#EC4899</color>
@@ -19,12 +25,15 @@
     <!-- Background and Surface -->
     <color name="background">#F9FAFB</color>
     <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F3F4F6</color>
+    <color name="onBackground">#1F2937</color>
 
     <!-- Text Colors -->
     <color name="text_primary">#1F2937</color>
     <color name="text_secondary">#6B7280</color>
 
-    <!-- Divider -->
+    <!-- Stroke & Divider -->
+    <color name="stroke">#E5E7EB</color>
     <color name="divider">#E5E7EB</color>
 
     <!-- Common Colors -->

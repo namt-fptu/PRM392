@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.edusummarize" />
-                  <option name="mobileSdkAppId" value="1:835004936509:android:09921467d64c805a575554" />
-                  <option name="projectId" value="edusummarize-6f11e" />
-                  <option name="projectNumber" value="835004936509" />
+                  <option name="mobileSdkAppId" value="1:529506782811:android:be5560e5a89abf682cf97e" />
+                  <option name="projectId" value="prm392-edusummarize" />
+                  <option name="projectNumber" value="529506782811" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -1,6 +1,7 @@
 package com.example.edusummarize.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +13,16 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.edusummarize.R;
+import com.example.edusummarize.model.Flashcard;
 import com.example.edusummarize.model.Summary;
+import com.example.edusummarize.repository.FirebaseFlashcardRepository;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -28,10 +32,12 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
     private List<Summary> summaryList;
     private ExoPlayer exoPlayer;
     private int currentPlayingPosition = -1;
+    private FirebaseFlashcardRepository flashcardRepository;
 
     public SummaryAdapter(Context context, List<Summary> summaryList) {
         this.context = context;
         this.summaryList = summaryList;
+        flashcardRepository = new FirebaseFlashcardRepository();
     }
 
     @NonNull
@@ -78,6 +84,66 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
         });
 
         holder.itemView.setOnClickListener(v -> showSummaryDetail(summary));
+
+        holder.btnFlashcards.setOnClickListener(v -> {
+            // Check if flashcards already exist for this summary
+            Toast.makeText(context, "Đang tải flashcards...", Toast.LENGTH_SHORT).show();
+
+            flashcardRepository.getFlashcardsBySummaryId(summary.getId(), new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
+                @Override
+                public void onSuccess(List<Flashcard> existingCards) {
+                    if (existingCards != null && !existingCards.isEmpty()) {
+                        // Flashcards already exist - load them
+                        Intent intent = new Intent(context, com.example.edusummarize.ui.FlashcardActivity.class);
+                        intent.putParcelableArrayListExtra("cards", new ArrayList<>(existingCards));
+                        context.startActivity(intent);
+                    } else {
+                        // No flashcards exist - generate new ones
+                        Toast.makeText(context, "Đang tạo flashcards mới...", Toast.LENGTH_SHORT).show();
+                        flashcardRepository.generateFlashcards(summary.getId(), summary.getSummaryText(), new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
+                            @Override
+                            public void onSuccess(List<Flashcard> result) {
+                                Intent intent = new Intent(context, com.example.edusummarize.ui.FlashcardActivity.class);
+                                intent.putParcelableArrayListExtra("cards", new ArrayList<>(result));
+                                context.startActivity(intent);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(context, "Lỗi tạo flashcards: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    // If error checking, try to generate new ones anyway
+                    Toast.makeText(context, "Đang tạo flashcards mới...", Toast.LENGTH_SHORT).show();
+                    flashcardRepository.generateFlashcards(summary.getId(), summary.getSummaryText(), new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
+                        @Override
+                        public void onSuccess(List<Flashcard> result) {
+                            Intent intent = new Intent(context, com.example.edusummarize.ui.FlashcardActivity.class);
+                            intent.putParcelableArrayListExtra("cards", new ArrayList<>(result));
+                            context.startActivity(intent);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e2) {
+                            Toast.makeText(context, "Lỗi: " + e2.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });
+        });
+
+        holder.btnQuiz.setOnClickListener(v -> {
+            // Open QuizActivity
+            Intent intent = new Intent(context, com.example.edusummarize.ui.QuizActivity.class);
+            intent.putExtra("summaryId", summary.getId());
+            intent.putExtra("summaryText", summary.getSummaryText());
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -149,7 +215,7 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvDate, tvSummary;
-        ImageButton btnPlay;
+        ImageButton btnPlay, btnFlashcards, btnQuiz;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -157,6 +223,8 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
             tvDate = itemView.findViewById(R.id.tv_date);
             tvSummary = itemView.findViewById(R.id.tv_summary);
             btnPlay = itemView.findViewById(R.id.btn_play);
+            btnFlashcards = itemView.findViewById(R.id.btn_flashcards);
+            btnQuiz = itemView.findViewById(R.id.btn_quiz);
         }
     }
 }

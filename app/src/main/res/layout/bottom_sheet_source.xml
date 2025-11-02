@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modern Material 3 Bottom Sheet for source selection -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Chọn nguồn tài liệu"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="@color/text_primary"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="24dp" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btn_camera"
@@ -23,23 +24,25 @@
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="20dp"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:src="@drawable/ic_camera"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:background="@drawable/circle_primary_light"
-                android:contentDescription="Camera" />
+                android:contentDescription="Camera"
+                app:tint="@color/primary" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -59,8 +62,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:text="Sử dụng camera để chụp tài liệu"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
 
             </LinearLayout>
@@ -77,23 +81,25 @@
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="20dp"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:src="@drawable/ic_gallery"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:background="@drawable/circle_accent_light"
-                android:contentDescription="Gallery" />
+                android:contentDescription="Gallery"
+                app:tint="@color/accent" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -105,7 +111,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chọn từ thư viện ảnh"
+                    android:text="Thư viện ảnh"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
@@ -113,8 +119,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chọn ảnh có sẵn trong thiết bị"
-                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:text="Chọn ảnh từ thư viện"
+                    android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
 
             </LinearLayout>
@@ -131,23 +138,25 @@
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="20dp"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:src="@drawable/ic_pdf"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:background="@drawable/circle_error_light"
-                android:contentDescription="PDF" />
+                android:contentDescription="PDF"
+                app:tint="@color/error" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -159,7 +168,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chọn file PDF"
+                    android:text="File PDF"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
@@ -167,8 +176,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trích xuất text từ tệp PDF"
-                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:text="Chọn file PDF để tóm tắt"
+                    android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
 
             </LinearLayout>
@@ -184,23 +194,25 @@
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="20dp"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:src="@drawable/ic_word"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:background="@drawable/circle_info_light"
-                android:contentDescription="DOCX" />
+                android:contentDescription="DOCX"
+                app:tint="@color/info" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -212,7 +224,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chọn file DOCX"
+                    android:text="File DOCX"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
@@ -220,8 +232,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trích xuất text từ tệp Word"
-                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:text="Chọn file Word để tóm tắt"
+                    android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
 
             </LinearLayout>

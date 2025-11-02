@@ -29,4 +29,11 @@
     <string name="close">Đóng</string>
     <string name="logout">Đăng xuất</string>
     <string name="search">Tìm kiếm</string>
+
+    <!-- Flashcard stats strings -->
+    <string name="not_signed_in">Chưa đăng nhập</string>
+    <string name="due_count">Due: %1$d</string>
+    <string name="learned_today_count">Learned today: %1$d</string>
+    <string name="failed_load_due">Failed to load due: %1$s</string>
+    <string name="failed_load_stats">Failed to load stats: %1$s</string>
 </resources>

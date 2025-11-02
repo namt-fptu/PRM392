@@ -16,6 +16,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Read GEMINI_API_KEY from project properties (e.g., in gradle.properties or via -P)
+        val geminiKey: String = (project.findProperty("GEMINI_API_KEY") as String?) ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
