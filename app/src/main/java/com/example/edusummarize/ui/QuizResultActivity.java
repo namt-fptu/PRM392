@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.edusummarize.R;
+import com.example.edusummarize.adapter.QuizAnswerReviewAdapter;
 import com.example.edusummarize.model.Quiz;
 import com.example.edusummarize.model.QuizResult;
 import com.example.edusummarize.repository.FirebaseQuizRepository;
@@ -157,30 +158,12 @@ public class QuizResultActivity extends AppCompatActivity {
     }
 
     private void setupWrongAnswersRecyclerView() {
-        // Simple text view for wrong answers
         rvWrongAnswers.setLayoutManager(new LinearLayoutManager(this));
-
-        // Create a simple adapter showing wrong answers
-        // For now, we'll just hide the RecyclerView as creating a full adapter
-        // would require additional adapter class
-        StringBuilder wrongAnswersText = new StringBuilder();
-        for (int i = 0; i < userAnswers.length; i++) {
-            if (userAnswers[i] != quiz.getQuestions().get(i).getCorrectAnswer()) {
-                Quiz.Question q = quiz.getQuestions().get(i);
-                wrongAnswersText.append("Câu ").append(i + 1).append(": ")
-                    .append(q.getQuestion()).append("\n")
-                    .append("Đáp án đúng: ")
-                    .append(q.getOptions()[q.getCorrectAnswer()]).append("\n")
-                    .append("Giải thích: ").append(q.getExplanation()).append("\n\n");
-            }
-        }
-
-        if (wrongAnswersText.length() == 0) {
-            wrongAnswersText.append("Bạn đã trả lời đúng tất cả!");
-        }
-
-        // For simplicity, show as Toast for now
-        Toast.makeText(this, wrongAnswersText.toString(), Toast.LENGTH_LONG).show();
+        QuizAnswerReviewAdapter adapter = new QuizAnswerReviewAdapter(
+                quiz.getQuestions(),
+                userAnswers
+        );
+        rvWrongAnswers.setAdapter(adapter);
     }
 
     private void goHome() {

@@ -1,4 +1,6 @@
+<!-- Light info background circle -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/info_light" />
+    <solid android:color="#E3F2FD" />
 </shape>
+

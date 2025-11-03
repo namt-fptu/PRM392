@@ -16,6 +16,64 @@
         android:textColor="@color/text_primary"
         android:layout_marginBottom="24dp" />
 
+    <!-- Manual Text Input Option -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/btn_manual_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_edit"
+                android:padding="12dp"
+                android:background="@drawable/circle_success_light"
+                android:contentDescription="Nhập văn bản thủ công"
+                app:tint="@color/success" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nhập văn bản"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Nhập hoặc dán văn bản trực tiếp"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btn_camera"
         android:layout_width="match_parent"
@@ -41,7 +99,7 @@
                 android:src="@drawable/ic_camera"
                 android:padding="12dp"
                 android:background="@drawable/circle_primary_light"
-                android:contentDescription="Camera"
+                android:contentDescription="Chụp ảnh tài liệu"
                 app:tint="@color/primary" />
 
             <LinearLayout
@@ -98,7 +156,7 @@
                 android:src="@drawable/ic_gallery"
                 android:padding="12dp"
                 android:background="@drawable/circle_accent_light"
-                android:contentDescription="Gallery"
+                android:contentDescription="Chọn từ thư viện"
                 app:tint="@color/accent" />
 
             <LinearLayout
@@ -155,7 +213,7 @@
                 android:src="@drawable/ic_pdf"
                 android:padding="12dp"
                 android:background="@drawable/circle_error_light"
-                android:contentDescription="PDF"
+                android:contentDescription="Chọn file PDF"
                 app:tint="@color/error" />
 
             <LinearLayout
@@ -211,7 +269,7 @@
                 android:src="@drawable/ic_word"
                 android:padding="12dp"
                 android:background="@drawable/circle_info_light"
-                android:contentDescription="DOCX"
+                android:contentDescription="Chọn file Word"
                 app:tint="@color/info" />
 
             <LinearLayout
@@ -224,7 +282,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="File DOCX"
+                    android:text="File Word"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
@@ -233,7 +291,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Chọn file Word để tóm tắt"
+                    android:text="Chọn file DOCX để tóm tắt"
                     android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
 

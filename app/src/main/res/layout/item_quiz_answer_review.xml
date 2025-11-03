@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modern Material 3 Quiz Answer Review Item - Fixed structure for adapter compatibility -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Question header with status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tv_question_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Câu 1"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textColor="@color/primary" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/iv_status"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_check"
+                android:contentDescription="Status icon"
+                android:padding="4dp"
+                android:background="@drawable/circle_primary_light"
+                app:tint="@color/success" />
+
+        </LinearLayout>
+
+        <!-- Question text -->
+        <TextView
+            android:id="@+id/tv_question_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Câu hỏi ở đây"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:lineSpacingExtra="3dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- User's answer (if wrong) - MUST BE LinearLayout for adapter -->
+        <LinearLayout
+            android:id="@+id/layout_user_answer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_answer_wrong"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="❌ Câu trả lời của bạn:"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/error"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tv_user_answer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Đáp án sai"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+        </LinearLayout>
+
+        <!-- Correct answer container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_answer_correct">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✅ Đáp án đúng:"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/success"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tv_correct_answer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Đáp án đúng"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+        </LinearLayout>
+
+        <!-- Explanation - MUST BE LinearLayout for adapter -->
+        <LinearLayout
+            android:id="@+id/layout_explanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@drawable/bg_explanation"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💡 Giải thích:"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tv_explanation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Giải thích"
+                android:textSize="14sp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="@color/text_secondary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

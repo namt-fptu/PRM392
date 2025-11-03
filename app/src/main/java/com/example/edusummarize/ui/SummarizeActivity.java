@@ -112,6 +112,11 @@ public class SummarizeActivity extends AppCompatActivity {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.bottom_sheet_source, null);
 
+        view.findViewById(R.id.btn_manual_input).setOnClickListener(v -> {
+            dialog.dismiss();
+            showManualInputDialog();
+        });
+
         view.findViewById(R.id.btn_camera).setOnClickListener(v -> {
             dialog.dismiss();
             checkCameraPermission();
@@ -134,6 +139,43 @@ public class SummarizeActivity extends AppCompatActivity {
 
         dialog.setContentView(view);
         dialog.show();
+    }
+
+    private void showManualInputDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_manual_input, null);
+        EditText etManualText = dialogView.findViewById(R.id.et_manual_text);
+
+        // Pre-fill with existing text if available
+        if (!TextUtils.isEmpty(extractedText)) {
+            etManualText.setText(extractedText);
+            etManualText.setSelection(extractedText.length());
+        }
+
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this);
+        dialogBuilder.setView(dialogView);
+
+        androidx.appcompat.app.AlertDialog alertDialog = dialogBuilder.create();
+
+        dialogView.findViewById(R.id.btn_cancel).setOnClickListener(v -> alertDialog.dismiss());
+
+        dialogView.findViewById(R.id.btn_confirm).setOnClickListener(v -> {
+            String text = etManualText.getText().toString().trim();
+            if (TextUtils.isEmpty(text)) {
+                etManualText.setError("Vui lòng nhập văn bản");
+                return;
+            }
+
+            if (text.length() < 50) {
+                etManualText.setError("Văn bản quá ngắn (tối thiểu 50 ký tự)");
+                return;
+            }
+
+            displayExtractedText(text);
+            alertDialog.dismiss();
+            Toast.makeText(this, "Đã nhập văn bản thành công", Toast.LENGTH_SHORT).show();
+        });
+
+        alertDialog.show();
     }
 
     private void checkCameraPermission() {
