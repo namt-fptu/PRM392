@@ -131,6 +131,18 @@ public class Quiz implements Parcelable {
         public String[] getOptions() { return options; }
         public void setOptions(String[] options) { this.options = options; }
 
+        // Firestore compatibility - convert List to array
+        public java.util.List<String> getOptionsList() {
+            if (options == null) return new java.util.ArrayList<>();
+            return java.util.Arrays.asList(options);
+        }
+
+        public void setOptionsList(java.util.List<String> optionsList) {
+            if (optionsList != null) {
+                this.options = optionsList.toArray(new String[0]);
+            }
+        }
+
         public int getCorrectAnswer() { return correctAnswer; }
         public void setCorrectAnswer(int correctAnswer) { this.correctAnswer = correctAnswer; }
 

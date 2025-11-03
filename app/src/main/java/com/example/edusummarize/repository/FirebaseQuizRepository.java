@@ -225,14 +225,8 @@ public class FirebaseQuizRepository {
             for (Quiz.Question q : quiz.getQuestions()) {
                 Map<String, Object> questionMap = new HashMap<>();
                 questionMap.put("question", q.getQuestion());
-                // Convert String[] to List<String> for better Firebase compatibility
-                List<String> optionsList = new ArrayList<>();
-                if (q.getOptions() != null) {
-                    for (String opt : q.getOptions()) {
-                        optionsList.add(opt);
-                    }
-                }
-                questionMap.put("options", optionsList);
+                // Use List instead of array for Firestore
+                questionMap.put("optionsList", q.getOptionsList());
                 questionMap.put("correctAnswer", q.getCorrectAnswer());
                 questionMap.put("explanation", q.getExplanation());
                 questionsList.add(questionMap);
@@ -257,9 +251,68 @@ public class FirebaseQuizRepository {
                     return;
                 }
                 try {
-                    Quiz quiz = queryDocumentSnapshots.getDocuments().get(0).toObject(Quiz.class);
+                    // Manual parsing to handle Firestore data properly
+                    Map<String, Object> data = queryDocumentSnapshots.getDocuments().get(0).getData();
+                    if (data == null) {
+                        callback.onFailure(new Exception("Quiz data is null"));
+                        return;
+                    }
+
+                    Quiz quiz = new Quiz();
+                    quiz.setId((String) data.get("id"));
+                    quiz.setSummaryId((String) data.get("summaryId"));
+                    quiz.setUserId((String) data.get("userId"));
+
+                    Object createdAtObj = data.get("createdAtSeconds");
+                    if (createdAtObj instanceof Long) {
+                        quiz.setCreatedAtSeconds((Long) createdAtObj);
+                    } else if (createdAtObj instanceof Number) {
+                        quiz.setCreatedAtSeconds(((Number) createdAtObj).longValue());
+                    }
+
+                    // Parse questions
+                    List<Quiz.Question> questions = new ArrayList<>();
+                    Object questionsObj = data.get("questions");
+                    if (questionsObj instanceof List) {
+                        List<?> questionsList = (List<?>) questionsObj;
+                        for (Object qObj : questionsList) {
+                            if (qObj instanceof Map) {
+                                Map<?, ?> qMap = (Map<?, ?>) qObj;
+                                Quiz.Question question = new Quiz.Question();
+                                question.setQuestion((String) qMap.get("question"));
+
+                                // Handle options - try optionsList first, then fall back to options
+                                Object optionsObj = qMap.get("optionsList");
+                                if (optionsObj == null) {
+                                    optionsObj = qMap.get("options");
+                                }
+
+                                if (optionsObj instanceof List) {
+                                    List<?> optList = (List<?>) optionsObj;
+                                    String[] options = new String[optList.size()];
+                                    for (int i = 0; i < optList.size(); i++) {
+                                        options[i] = (String) optList.get(i);
+                                    }
+                                    question.setOptions(options);
+                                }
+
+                                Object correctAnswerObj = qMap.get("correctAnswer");
+                                if (correctAnswerObj instanceof Long) {
+                                    question.setCorrectAnswer(((Long) correctAnswerObj).intValue());
+                                } else if (correctAnswerObj instanceof Number) {
+                                    question.setCorrectAnswer(((Number) correctAnswerObj).intValue());
+                                }
+
+                                question.setExplanation((String) qMap.get("explanation"));
+                                questions.add(question);
+                            }
+                        }
+                    }
+                    quiz.setQuestions(questions);
+
                     callback.onSuccess(quiz);
                 } catch (Exception e) {
+                    Log.e(TAG, "Error parsing quiz", e);
                     callback.onFailure(e);
                 }
             })
@@ -273,8 +326,9 @@ public class FirebaseQuizRepository {
         data.put("userId", result.getUserId());
         data.put("correctAnswers", result.getCorrectAnswers());
         data.put("totalQuestions", result.getTotalQuestions());
-        data.put("userAnswers", result.getUserAnswers());
-        data.put("completedAt", result.getCompletedAt());
+        // Use List instead of array for Firestore
+        data.put("userAnswersList", result.getUserAnswersList());
+        data.put("completedAtSeconds", result.getCompletedAtSeconds());
 
         db.collection("quizResults").document(result.getId()).set(data)
             .addOnSuccessListener(aVoid -> callback.onSuccess(null))

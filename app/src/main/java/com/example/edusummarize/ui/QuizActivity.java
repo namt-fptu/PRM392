@@ -10,15 +10,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.edusummarize.R;
 import com.example.edusummarize.model.Quiz;
+import com.example.edusummarize.model.QuizResult;
 import com.example.edusummarize.repository.FirebaseQuizRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class QuizActivity extends AppCompatActivity {
     private TextView tvQuestionNumber, tvQuestion;
@@ -36,6 +41,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private String summaryId;
     private String summaryText;
+    private String userId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,8 +52,15 @@ public class QuizActivity extends AppCompatActivity {
         summaryId = getIntent().getStringExtra("summaryId");
         summaryText = getIntent().getStringExtra("summaryText");
 
+        // Get current user
+        userId = FirebaseAuth.getInstance().getCurrentUser() != null ?
+                FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+
         initViews();
         repository = new FirebaseQuizRepository();
+
+        // Try to load existing quiz first
+        loadExistingQuiz();
 
         btnGenerateQuiz.setOnClickListener(v -> generateQuiz());
         btnBack.setOnClickListener(v -> previousQuestion());
@@ -68,6 +81,41 @@ public class QuizActivity extends AppCompatActivity {
         progressLoading = findViewById(R.id.progress_loading);
         cardQuiz = findViewById(R.id.card_quiz);
         layoutButtons = findViewById(R.id.layout_buttons);
+    }
+
+    private void loadExistingQuiz() {
+        // Show loading
+        progressLoading.setVisibility(View.VISIBLE);
+        btnGenerateQuiz.setVisibility(View.GONE);
+
+        repository.getQuizBySummaryId(summaryId, new FirebaseQuizRepository.RepositoryCallback<Quiz>() {
+            @Override
+            public void onSuccess(Quiz result) {
+                runOnUiThread(() -> {
+                    currentQuiz = result;
+                    userAnswers = new int[currentQuiz.getQuestions().size()];
+                    for (int i = 0; i < userAnswers.length; i++) {
+                        userAnswers[i] = -1; // -1 means not answered
+                    }
+
+                    progressLoading.setVisibility(View.GONE);
+                    cardQuiz.setVisibility(View.VISIBLE);
+                    layoutButtons.setVisibility(View.VISIBLE);
+                    displayQuestion(0);
+                    Toast.makeText(QuizActivity.this, "Đã tải quiz từ database", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // No existing quiz found, show generate button
+                runOnUiThread(() -> {
+                    progressLoading.setVisibility(View.GONE);
+                    btnGenerateQuiz.setVisibility(View.VISIBLE);
+                    Toast.makeText(QuizActivity.this, "Chưa có quiz. Nhấn để tạo mới", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 
     private void generateQuiz() {
@@ -93,6 +141,7 @@ public class QuizActivity extends AppCompatActivity {
                                 cardQuiz.setVisibility(View.VISIBLE);
                                 layoutButtons.setVisibility(View.VISIBLE);
                                 displayQuestion(0);
+                                Toast.makeText(QuizActivity.this, "Đã tạo và lưu quiz thành công", Toast.LENGTH_SHORT).show();
                             });
                         }
 
@@ -214,12 +263,84 @@ public class QuizActivity extends AppCompatActivity {
             }
         }
 
-        // Go to result activity - USE PARCELABLE
-        Intent intent = new Intent(this, QuizResultActivity.class);
-        intent.putExtra("quiz", currentQuiz); // Parcelable, not Serializable
-        intent.putExtra("userAnswers", userAnswers);
-        intent.putExtra("correctCount", correctCount);
-        startActivity(intent);
-        finish();
+        final int finalCorrectCount = correctCount;
+        final int totalQuestions = currentQuiz.getQuestions().size();
+
+        // Create quiz result
+        String resultId = UUID.randomUUID().toString();
+        QuizResult result = new QuizResult(
+                resultId,
+                currentQuiz.getId(),
+                userId,
+                correctCount,
+                totalQuestions,
+                userAnswers,
+                Timestamp.now()
+        );
+
+        // Save result to database
+        if (userId != null) {
+            repository.saveQuizResult(result, new FirebaseQuizRepository.RepositoryCallback<Void>() {
+                @Override
+                public void onSuccess(Void unused) {
+                    runOnUiThread(() -> {
+                        showResultDialog(finalCorrectCount, totalQuestions, "Đã lưu kết quả thành công");
+                    });
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    runOnUiThread(() -> {
+                        showResultDialog(finalCorrectCount, totalQuestions, "Lỗi lưu kết quả: " + e.getMessage());
+                    });
+                }
+            });
+        } else {
+            showResultDialog(finalCorrectCount, totalQuestions, "Chưa đăng nhập - không lưu được kết quả");
+        }
+    }
+
+    private void showResultDialog(int correctCount, int totalQuestions, String saveStatus) {
+        double percentage = (correctCount * 100.0) / totalQuestions;
+        String grade;
+
+        if (percentage >= 90) {
+            grade = "Xuất sắc! 🎉";
+        } else if (percentage >= 80) {
+            grade = "Tốt! 👍";
+        } else if (percentage >= 70) {
+            grade = "Khá! 😊";
+        } else if (percentage >= 50) {
+            grade = "Trung bình 😐";
+        } else {
+            grade = "Cần cố gắng thêm 💪";
+        }
+
+        String message = String.format(
+                "Kết quả: %d/%d câu đúng (%.1f%%)\n\n%s\n\n%s",
+                correctCount,
+                totalQuestions,
+                percentage,
+                grade,
+                saveStatus
+        );
+
+        new AlertDialog.Builder(this)
+                .setTitle("📊 Kết quả bài làm")
+                .setMessage(message)
+                .setPositiveButton("Xem chi tiết", (dialog, which) -> {
+                    // Go to detailed result activity
+                    Intent intent = new Intent(QuizActivity.this, QuizResultActivity.class);
+                    intent.putExtra("quiz", currentQuiz);
+                    intent.putExtra("userAnswers", userAnswers);
+                    intent.putExtra("correctCount", correctCount);
+                    startActivity(intent);
+                    finish();
+                })
+                .setNegativeButton("Đóng", (dialog, which) -> {
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
     }
 }
