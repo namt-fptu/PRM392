@@ -15,26 +15,48 @@
     <color name="accent">#EC4899</color>
     <color name="accent_light">#FCE7F3</color>
 
-    <!-- Success, Error, Info -->
+    <!-- Success, Error, Info, Warning -->
     <color name="success">#10B981</color>
+    <color name="success_light">#D1FAE5</color>
     <color name="error">#EF4444</color>
     <color name="error_light">#FEE2E2</color>
     <color name="info">#3B82F6</color>
     <color name="info_light">#DBEAFE</color>
+    <color name="warning">#F59E0B</color>
+    <color name="warning_light">#FEF3C7</color>
 
     <!-- Background and Surface -->
     <color name="background">#F9FAFB</color>
     <color name="surface">#FFFFFF</color>
     <color name="surface_variant">#F3F4F6</color>
+    <color name="surface_elevated">#FFFFFF</color>
     <color name="onBackground">#1F2937</color>
+    <color name="onSurface">#1F2937</color>
 
     <!-- Text Colors -->
     <color name="text_primary">#1F2937</color>
     <color name="text_secondary">#6B7280</color>
+    <color name="text_disabled">#9CA3AF</color>
 
     <!-- Stroke & Divider -->
     <color name="stroke">#E5E7EB</color>
     <color name="divider">#E5E7EB</color>
+
+    <!-- Overlay -->
+    <color name="overlay">#FFFFFF</color>
+    <color name="scrim">#000000</color>
+
+    <!-- Shimmer Effect Colors -->
+    <color name="shimmer_base">#E5E7EB</color>
+    <color name="shimmer_highlight">#F9FAFB</color>
+
+    <!-- Quiz Question Indicator Colors -->
+    <color name="question_unanswered">#E5E7EB</color>
+    <color name="question_answered">#8B5CF6</color>
+    <color name="question_current">#6366F1</color>
+
+    <!-- Action Colors -->
+    <color name="logout_red">#EF4444</color>
 
     <!-- Common Colors -->
     <color name="white">#FFFFFF</color>

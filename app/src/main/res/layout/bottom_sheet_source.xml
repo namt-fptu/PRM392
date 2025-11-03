@@ -74,6 +74,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Camera Option -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btn_camera"
         android:layout_width="match_parent"
@@ -99,7 +100,7 @@
                 android:src="@drawable/ic_camera"
                 android:padding="12dp"
                 android:background="@drawable/circle_primary_light"
-                android:contentDescription="Chụp ảnh tài liệu"
+                android:contentDescription="Chụp ảnh"
                 app:tint="@color/primary" />
 
             <LinearLayout
@@ -121,7 +122,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Sử dụng camera để chụp tài liệu"
+                    android:text="Chụp ảnh tài liệu trực tiếp"
                     android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
 
@@ -131,6 +132,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Gallery Option -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btn_gallery"
         android:layout_width="match_parent"
@@ -188,6 +190,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- PDF Option -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btn_pdf"
         android:layout_width="match_parent"

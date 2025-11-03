@@ -1,44 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Colors - Dark Mode -->
-    <color name="primary">#818CF8</color>
-    <color name="primary_dark">#6366F1</color>
+    <!-- Dark Theme Colors - Material Design 3 Dark Palette -->
+
+    <!-- Primary Colors - Dark -->
+    <color name="primary">#A5B4FC</color>
+    <color name="primary_dark">#818CF8</color>
     <color name="primary_light">#312E81</color>
     <color name="onPrimary">#1E1B4B</color>
 
-    <!-- Secondary Colors - Dark Mode -->
-    <color name="secondary">#A78BFA</color>
+    <!-- Secondary Colors - Dark -->
+    <color name="secondary">#C4B5FD</color>
     <color name="secondary_container">#4C1D95</color>
     <color name="on_secondary_container">#EDE9FE</color>
 
-    <!-- Accent Colors - Dark Mode -->
+    <!-- Accent Colors - Dark -->
     <color name="accent">#F472B6</color>
     <color name="accent_light">#831843</color>
 
-    <!-- Success, Error, Info - Dark Mode -->
+    <!-- Status Colors - Dark -->
     <color name="success">#34D399</color>
     <color name="error">#F87171</color>
     <color name="error_light">#7F1D1D</color>
     <color name="info">#60A5FA</color>
     <color name="info_light">#1E3A8A</color>
+    <color name="warning">#FBBF24</color>
+    <color name="warning_light">#78350F</color>
 
-    <!-- Background and Surface - Dark Mode -->
-    <color name="background">#111827</color>
-    <color name="surface">#1F2937</color>
-    <color name="surface_variant">#374151</color>
-    <color name="onBackground">#F9FAFB</color>
+    <!-- Background and Surface - Dark -->
+    <color name="background">#0F172A</color>
+    <color name="surface">#1E293B</color>
+    <color name="surface_variant">#334155</color>
+    <color name="surface_elevated">#475569</color>
+    <color name="onBackground">#F1F5F9</color>
+    <color name="onSurface">#E2E8F0</color>
 
-    <!-- Text Colors - Dark Mode -->
-    <color name="text_primary">#F9FAFB</color>
-    <color name="text_secondary">#9CA3AF</color>
+    <!-- Text Colors - Dark -->
+    <color name="text_primary">#F1F5F9</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_disabled">#64748B</color>
 
-    <!-- Stroke & Divider - Dark Mode -->
-    <color name="stroke">#374151</color>
-    <color name="divider">#374151</color>
+    <!-- Stroke & Divider - Dark -->
+    <color name="stroke">#334155</color>
+    <color name="divider">#475569</color>
+
+    <!-- Overlay - Dark -->
+    <color name="overlay">#1E293B</color>
+    <color name="scrim">#000000</color>
 
     <!-- Common Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
+
+    <color name="logout_red">#F44336</color>
 </resources>
 

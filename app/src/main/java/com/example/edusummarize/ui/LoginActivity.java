@@ -14,7 +14,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.edusummarize.R;
+import com.example.edusummarize.ui.components.CustomToast;
 import com.example.edusummarize.utils.FirebaseAuthDebug;
+import com.example.edusummarize.utils.HapticFeedbackUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -45,6 +47,11 @@ public class LoginActivity extends AppCompatActivity {
 
         initViews();
         setupListeners();
+
+        // UI/UX IMPROVEMENT: Add fade-in animation
+        findViewById(R.id.card_login).startAnimation(
+            android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fade_in)
+        );
     }
 
     private void initViews() {
@@ -56,10 +63,19 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnLogin.setOnClickListener(v -> loginUser());
+        btnLogin.setOnClickListener(v -> {
+            // UI/UX IMPROVEMENT: Haptic feedback on button press
+            HapticFeedbackUtil.lightVibrate(this);
+            v.startAnimation(android.view.animation.AnimationUtils.loadAnimation(this, R.anim.bounce));
+            loginUser();
+        });
+
         tvRegister.setOnClickListener(v -> {
+            HapticFeedbackUtil.lightVibrate(this);
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
+            // UI/UX IMPROVEMENT: Smooth activity transition
+            overridePendingTransition(R.anim.slide_up, R.anim.fade_in);
         });
     }
 
@@ -69,21 +85,29 @@ public class LoginActivity extends AppCompatActivity {
 
         if (TextUtils.isEmpty(email)) {
             etEmail.setError("Email không được để trống");
+            etEmail.requestFocus();
+            HapticFeedbackUtil.errorVibrate(this);
             return;
         }
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("Email không đúng định dạng");
+            etEmail.requestFocus();
+            HapticFeedbackUtil.errorVibrate(this);
             return;
         }
 
         if (TextUtils.isEmpty(password)) {
             etPassword.setError("Mật khẩu không được để trống");
+            etPassword.requestFocus();
+            HapticFeedbackUtil.errorVibrate(this);
             return;
         }
 
         if (password.length() < 6) {
             etPassword.setError("Mật khẩu phải có ít nhất 6 ký tự");
+            etPassword.requestFocus();
+            HapticFeedbackUtil.errorVibrate(this);
             return;
         }
 
@@ -99,11 +123,14 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (task.isSuccessful()) {
                         Log.d("LoginActivity", "Login successful");
-                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công!",
-                                Toast.LENGTH_SHORT).show();
+                        // UI/UX IMPROVEMENT: Success feedback
+                        HapticFeedbackUtil.successVibrate(this);
+                        CustomToast.success(this, "Đăng nhập thành công!");
                         navigateToHome();
                     } else {
                         FirebaseAuthDebug.logError("Login failed", task.getException());
+                        // UI/UX IMPROVEMENT: Error feedback
+                        HapticFeedbackUtil.errorVibrate(this);
                         handleAuthError(task.getException());
                     }
                 });
@@ -134,13 +161,16 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
-        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+        // UI/UX IMPROVEMENT: Use custom toast instead of default
+        CustomToast.error(this, errorMessage);
     }
 
     private void navigateToHome() {
         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        // UI/UX IMPROVEMENT: Smooth transition
+        overridePendingTransition(R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 }

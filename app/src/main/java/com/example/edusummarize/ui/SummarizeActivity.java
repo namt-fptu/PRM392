@@ -322,7 +322,8 @@ public class SummarizeActivity extends AppCompatActivity {
         SummarizerService service = ApiClient.getSummarizerService();
         SummarizeRequest request = new SummarizeRequest(extractedText);
 
-        service.summarize(request).enqueue(new Callback<SummarizeResponse>() {
+        // SECURITY FIX: Pass API key as parameter from BuildConfig
+        service.summarize(com.example.edusummarize.BuildConfig.GEMINI_API_KEY, request).enqueue(new Callback<SummarizeResponse>() {
             @Override
             public void onResponse(@NonNull Call<SummarizeResponse> call,
                                    @NonNull Response<SummarizeResponse> response) {

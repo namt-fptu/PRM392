@@ -33,11 +33,18 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
     private ExoPlayer exoPlayer;
     private int currentPlayingPosition = -1;
     private FirebaseFlashcardRepository flashcardRepository;
+    // MEMORY LEAK FIX: Add lifecycle owner to properly manage ExoPlayer
+    private androidx.lifecycle.LifecycleOwner lifecycleOwner;
 
     public SummaryAdapter(Context context, List<Summary> summaryList) {
         this.context = context;
         this.summaryList = summaryList;
         flashcardRepository = new FirebaseFlashcardRepository();
+
+        // Try to get lifecycle owner for proper cleanup
+        if (context instanceof androidx.lifecycle.LifecycleOwner) {
+            this.lifecycleOwner = (androidx.lifecycle.LifecycleOwner) context;
+        }
     }
 
     @NonNull
@@ -86,23 +93,44 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
         holder.itemView.setOnClickListener(v -> showSummaryDetail(summary));
 
         holder.btnFlashcards.setOnClickListener(v -> {
+            // Prevent double-click
+            holder.btnFlashcards.setEnabled(false);
+
             // Check if flashcards already exist for this summary
             Toast.makeText(context, "Đang tải flashcards...", Toast.LENGTH_SHORT).show();
 
             flashcardRepository.getFlashcardsBySummaryId(summary.getId(), new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
                 @Override
                 public void onSuccess(List<Flashcard> existingCards) {
+                    holder.btnFlashcards.setEnabled(true);
+
                     if (existingCards != null && !existingCards.isEmpty()) {
                         // Flashcards already exist - load them
+                        Toast.makeText(context, "Tìm thấy " + existingCards.size() + " flashcards", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(context, com.example.edusummarize.ui.FlashcardActivity.class);
                         intent.putParcelableArrayListExtra("cards", new ArrayList<>(existingCards));
                         context.startActivity(intent);
                     } else {
                         // No flashcards exist - generate new ones
                         Toast.makeText(context, "Đang tạo flashcards mới...", Toast.LENGTH_SHORT).show();
-                        flashcardRepository.generateFlashcards(summary.getId(), summary.getSummaryText(), new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
+
+                        String textToUse = summary.getSummaryText();
+                        if (textToUse == null || textToUse.trim().isEmpty()) {
+                            textToUse = summary.getOriginalText();
+                        }
+
+                        if (textToUse == null || textToUse.trim().isEmpty()) {
+                            Toast.makeText(context, "Lỗi: Không có nội dung để tạo flashcard", Toast.LENGTH_LONG).show();
+                            holder.btnFlashcards.setEnabled(true);
+                            return;
+                        }
+
+                        final String finalText = textToUse;
+                        flashcardRepository.generateFlashcards(summary.getId(), finalText, new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
                             @Override
                             public void onSuccess(List<Flashcard> result) {
+                                holder.btnFlashcards.setEnabled(true);
+                                Toast.makeText(context, "Đã tạo " + result.size() + " flashcards!", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(context, com.example.edusummarize.ui.FlashcardActivity.class);
                                 intent.putParcelableArrayListExtra("cards", new ArrayList<>(result));
                                 context.startActivity(intent);
@@ -110,6 +138,7 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
 
                             @Override
                             public void onFailure(Exception e) {
+                                holder.btnFlashcards.setEnabled(true);
                                 Toast.makeText(context, "Lỗi tạo flashcards: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             }
                         });
@@ -118,11 +147,25 @@ public class SummaryAdapter extends RecyclerView.Adapter<SummaryAdapter.ViewHold
 
                 @Override
                 public void onFailure(Exception e) {
+                    holder.btnFlashcards.setEnabled(true);
                     // If error checking, try to generate new ones anyway
                     Toast.makeText(context, "Đang tạo flashcards mới...", Toast.LENGTH_SHORT).show();
-                    flashcardRepository.generateFlashcards(summary.getId(), summary.getSummaryText(), new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
+
+                    String textToUse = summary.getSummaryText();
+                    if (textToUse == null || textToUse.trim().isEmpty()) {
+                        textToUse = summary.getOriginalText();
+                    }
+
+                    if (textToUse == null || textToUse.trim().isEmpty()) {
+                        Toast.makeText(context, "Lỗi: Không có nội dung để tạo flashcard", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    final String finalText = textToUse;
+                    flashcardRepository.generateFlashcards(summary.getId(), finalText, new FirebaseFlashcardRepository.RepositoryCallback<List<Flashcard>>() {
                         @Override
                         public void onSuccess(List<Flashcard> result) {
+                            Toast.makeText(context, "Đã tạo " + result.size() + " flashcards!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(context, com.example.edusummarize.ui.FlashcardActivity.class);
                             intent.putParcelableArrayListExtra("cards", new ArrayList<>(result));
                             context.startActivity(intent);

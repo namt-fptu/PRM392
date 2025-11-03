@@ -2,6 +2,7 @@ package com.example.edusummarize.repository;
 
 import android.util.Log;
 
+import com.example.edusummarize.BuildConfig;
 import com.example.edusummarize.model.Quiz;
 import com.example.edusummarize.model.QuizResult;
 import com.example.edusummarize.network.ApiClient;
@@ -30,7 +31,8 @@ import retrofit2.Response;
 public class FirebaseQuizRepository {
     private static final String TAG = "QuizRepo";
     private final FirebaseFirestore db;
-    private static final String GEMINI_API_KEY = "AIzaSyAiI2W81wzjNFbovEVA3oTPU-nH6hslO5A";
+    // SECURITY FIX: Use BuildConfig instead of hardcoded key
+    private static final String GEMINI_API_KEY = BuildConfig.GEMINI_API_KEY;
 
     public interface RepositoryCallback<T> {
         void onSuccess(T result);
@@ -48,7 +50,18 @@ public class FirebaseQuizRepository {
             return;
         }
 
-        String prompt = "Tạo 5 câu hỏi trắc nghiệm từ văn bản sau. Trả về JSON array với format: [{\"question\": \"câu hỏi\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"correctAnswer\": 0, \"explanation\": \"giải thích\"}]. Văn bản: " + summaryText;
+        String prompt =
+                "Bạn là trợ lý học tập. Hãy tạo 10 câu hỏi trắc nghiệm dựa trên văn bản sau.\n" +
+                        "Yêu cầu:\n" +
+                        "- Mỗi câu hỏi có 4 lựa chọn (A, B, C, D).\n" +
+                        "- Chỉ có 1 đáp án đúng.\n" +
+                        "- Các câu hỏi phải kiểm tra hiểu biết chính, không đánh đố, không hỏi chi tiết vụn vặt.\n" +
+                        "- Với mỗi câu hỏi, thêm lời giải thích ngắn gọn, giúp người học hiểu vì sao đáp án đúng.\n" +
+                        "- Trả về **duy nhất** JSON array theo format:\n" +
+                        "[{\"question\": \"câu hỏi\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"correctAnswer\": 0, \"explanation\": \"giải thích\"}]\n" +
+                        "- Trong đó `correctAnswer` là **chỉ số** (0–3) của đáp án đúng trong mảng `options`.\n" +
+                        "- Không thêm mô tả, tiêu đề hay văn bản ngoài JSON.\n\n" +
+                        "Văn bản: " + summaryText;
 
         Map<String, Object> part = new HashMap<>();
         part.put("text", prompt);

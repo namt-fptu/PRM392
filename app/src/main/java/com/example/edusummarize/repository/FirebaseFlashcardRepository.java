@@ -62,9 +62,22 @@ public class FirebaseFlashcardRepository {
         } catch (Exception ignored) {}
         if (apiKey == null || apiKey.isEmpty()) apiKey = FALLBACK_GEMINI_API_KEY;
 
-        // Build prompt for Gemini
-        String prompt = "Tạo 10 flashcards từ văn bản. Format JSON: [{\\\"front\\\": câu hỏi, \\\"back\\\": đáp án}]. Văn bản: " + summaryText;
-
+        // Build prompt for Gemini - CẢI THIỆN: Tạo flashcard thay vì trắc nghiệm
+        String prompt =
+                "Tạo 10 flashcards học tập từ nội dung sau.\n" +
+                        "Yêu cầu:\n" +
+                        "- Mỗi flashcard gồm 2 mặt: câu hỏi (front) và đáp án (back)\n" +
+                        "- Câu hỏi ngắn gọn, dễ hiểu, tập trung vào kiến thức chính\n" +
+                        "- Đáp án rõ ràng, chính xác, không dài dòng\n" +
+                        "- Phù hợp để ôn tập và ghi nhớ\n" +
+                        "- Kết quả xuất ra theo định dạng JSON, không thêm chú thích hay văn bản ngoài JSON\n" +
+                        "Định dạng JSON mẫu:\n" +
+                        "[\n" +
+                        "  {\"front\": \"Câu hỏi ở đây?\", \"back\": \"Đáp án ở đây\"},\n" +
+                        "  {\"front\": \"Câu hỏi khác?\", \"back\": \"Đáp án khác\"},\n" +
+                        "  ... (10 phần tử tương tự)\n" +
+                        "]\n\n" +
+                        "Văn bản: " + summaryText;
         // Build request body similar to SummarizeRequest used elsewhere (contents -> parts -> text)
         Map<String, Object> part = new HashMap<>();
         part.put("text", prompt);
@@ -100,21 +113,23 @@ public class FirebaseFlashcardRepository {
                     // First try parse as object and navigate common fields
                     try {
                         JsonObject root = gson.fromJson(respStr, JsonObject.class);
-                        // common possible paths: candidates[0].content[...] or candidates[0].output or output
+                        // common possible paths: candidates[0].content.parts[0].text
                         if (root.has("candidates")) {
                             JsonArray candidates = root.getAsJsonArray("candidates");
                             if (candidates.size() > 0) {
                                 JsonObject first = candidates.get(0).getAsJsonObject();
                                 if (first.has("content")) {
-                                    // content may contain items with text
-                                    StringBuilder sb = new StringBuilder();
-                                    JsonArray contentArr = first.getAsJsonArray("content");
-                                    for (JsonElement el : contentArr) {
-                                        JsonObject o = el.getAsJsonObject();
-                                        if (o.has("text")) sb.append(o.get("text").getAsString());
+                                    JsonObject content = first.getAsJsonObject("content");
+                                    if (content.has("parts")) {
+                                        JsonArray parts = content.getAsJsonArray("parts");
+                                        StringBuilder sb = new StringBuilder();
+                                        for (JsonElement el : parts) {
+                                            JsonObject o = el.getAsJsonObject();
+                                            if (o.has("text")) sb.append(o.get("text").getAsString());
+                                        }
+                                        String combined = sb.toString().trim();
+                                        arr = extractFirstJsonArray(combined, gson);
                                     }
-                                    String combined = sb.toString().trim();
-                                    arr = extractFirstJsonArray(combined, gson);
                                 } else if (first.has("output")) {
                                     String out = first.get("output").getAsString();
                                     arr = extractFirstJsonArray(out, gson);
@@ -127,7 +142,7 @@ public class FirebaseFlashcardRepository {
                             arr = extractFirstJsonArray(root.get("output").getAsString(), gson);
                         }
                     } catch (Exception e) {
-                        // ignore
+                        Log.w(TAG, "Failed to parse as structured response", e);
                     }
 
                     // If still null, try direct parse for array in the whole response string
@@ -145,20 +160,25 @@ public class FirebaseFlashcardRepository {
                                 JsonObject obj = el.getAsJsonObject();
                                 String front = obj.has("front") ? obj.get("front").getAsString() : null;
                                 String back = obj.has("back") ? obj.get("back").getAsString() : null;
-                                if (front == null && back == null) continue;
+
+                                // Validate both front and back exist
+                                if (front == null || back == null || front.trim().isEmpty() || back.trim().isEmpty()) {
+                                    continue;
+                                }
+
                                 Flashcard card = new Flashcard();
                                 card.setId(UUID.randomUUID().toString());
                                 card.setSummaryId(summaryId);
                                 card.setUserId(userId);
-                                card.setFront(front != null ? front : "");
-                                card.setBack(back != null ? back : "");
+                                card.setFront(front.trim());
+                                card.setBack(back.trim());
                                 card.setDifficulty(0);
                                 card.setNextReview(Timestamp.now());
                                 card.setReviewCount(0);
                                 card.setCreatedAt(createdAt);
                                 cards.add(card);
                             } catch (Exception ex) {
-                                // skip malformed entries
+                                Log.w(TAG, "Failed to parse flashcard entry", ex);
                             }
                         }
                     }
@@ -213,18 +233,42 @@ public class FirebaseFlashcardRepository {
     }
 
     private void heuristicGenerate(String summaryId, String summaryText, RepositoryCallback<List<Flashcard>> callback) {
+        // Cải thiện: Tạo flashcard từ câu văn một cách thông minh hơn
         String[] sentences = summaryText.split("(?<=[\\.!?])\\s+");
         List<Flashcard> cards = new ArrayList<>();
-        int max = Math.min(10, Math.max(1, sentences.length));
         String userId = null;
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
 
         Timestamp createdAt = Timestamp.now();
-        for (int i = 0; i < max; i++) {
-            String front = sentences[i].trim();
-            String back = front.length() > 80 ? front.substring(0, 80) + "..." : front;
+        int count = 0;
+
+        // Tạo flashcard từ các câu có độ dài hợp lý
+        for (String sentence : sentences) {
+            String trimmed = sentence.trim();
+
+            // Skip câu quá ngắn hoặc quá dài
+            if (trimmed.length() < 10 || trimmed.length() > 200) continue;
+
+            // Tạo câu hỏi và đáp án từ câu văn
+            String front, back;
+
+            // Nếu câu có từ khóa quan trọng, tạo câu hỏi điền từ
+            if (trimmed.contains(" là ") || trimmed.contains(" được ") || trimmed.contains(" có ")) {
+                String[] parts = trimmed.split(" là | được | có ", 2);
+                if (parts.length == 2) {
+                    front = parts[0].trim() + " là gì?";
+                    back = parts[1].trim();
+                } else {
+                    front = "Giải thích: " + trimmed.substring(0, Math.min(50, trimmed.length())) + "...";
+                    back = trimmed;
+                }
+            } else {
+                // Tạo câu hỏi chung
+                front = "Điền vào chỗ trống: " + maskImportantWords(trimmed);
+                back = trimmed;
+            }
 
             Flashcard card = new Flashcard();
             card.setId(UUID.randomUUID().toString());
@@ -237,10 +281,51 @@ public class FirebaseFlashcardRepository {
             card.setReviewCount(0);
             card.setCreatedAt(createdAt);
             cards.add(card);
+
+            count++;
+            if (count >= 10) break; // Tối đa 10 flashcards
+        }
+
+        // Nếu không có đủ flashcard, tạo thêm từ văn bản
+        if (cards.isEmpty()) {
+            // Fallback: chia nhỏ văn bản
+            String shortText = summaryText.length() > 100 ? summaryText.substring(0, 100) : summaryText;
+            Flashcard card = new Flashcard();
+            card.setId(UUID.randomUUID().toString());
+            card.setSummaryId(summaryId);
+            card.setUserId(userId);
+            card.setFront("Nội dung chính của văn bản là gì?");
+            card.setBack(shortText);
+            card.setDifficulty(0);
+            card.setNextReview(Timestamp.now());
+            card.setReviewCount(0);
+            card.setCreatedAt(createdAt);
+            cards.add(card);
         }
 
         List<Flashcard> saved = new ArrayList<>();
         saveCardsRecursive(cards, 0, saved, callback);
+    }
+
+    // Helper method: Mask important words for fill-in-the-blank questions
+    private String maskImportantWords(String text) {
+        // Tìm từ quan trọng (danh từ riêng, số, từ dài) và thay bằng _____
+        String[] words = text.split("\\s+");
+        if (words.length < 3) return text;
+
+        // Ẩn từ ở giữa câu (thường là từ quan trọng)
+        int middleIndex = words.length / 2;
+        StringBuilder masked = new StringBuilder();
+
+        for (int i = 0; i < words.length; i++) {
+            if (i == middleIndex || (words[i].length() > 8 && Character.isUpperCase(words[i].charAt(0)))) {
+                masked.append("_____ ");
+            } else {
+                masked.append(words[i]).append(" ");
+            }
+        }
+
+        return masked.toString().trim();
     }
 
     private void saveCardsRecursive(List<Flashcard> cards, int idx, List<Flashcard> saved, RepositoryCallback<List<Flashcard>> callback) {

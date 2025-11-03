@@ -3,173 +3,163 @@ package com.example.edusummarize.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.ScaleAnimation;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.edusummarize.R;
 import com.example.edusummarize.adapter.QuizAnswerReviewAdapter;
 import com.example.edusummarize.model.Quiz;
-import com.example.edusummarize.model.QuizResult;
-import com.example.edusummarize.repository.FirebaseQuizRepository;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
-import com.google.firebase.Timestamp;
-import com.google.firebase.auth.FirebaseAuth;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class QuizResultActivity extends AppCompatActivity {
-    private ImageView ivTrophy;
-    private TextView tvScore, tvMessage;
-    private ProgressBar progressCircular;
-    private MaterialCardView cardWrongAnswers;
-    private RecyclerView rvWrongAnswers;
-    private MaterialButton btnViewAnswers, btnHome;
 
-    private Quiz quiz;
+    private TextView tvScore;
+    private TextView tvPercentage;
+    private TextView tvMessage;
+    private TextView tvCorrectCount;
+    private TextView tvWrongCount;
+    private MaterialButton btnViewAnswers;
+    private MaterialButton btnHome;
+    private CardView cardAnswersDetail;
+    private RecyclerView rvAnswersDetail;
+    private TextView tvToggleDetail;
+
+    private ArrayList<Quiz.Question> questions;
     private int[] userAnswers;
-    private int correctCount;
-    private FirebaseQuizRepository repository;
+    private int score;
+    private int totalQuestions;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz_result);
 
         initViews();
-        repository = new FirebaseQuizRepository();
-
-        // Get data from intent - USE getParcelableExtra for Parcelable
-        quiz = getIntent().getParcelableExtra("quiz");
-        userAnswers = getIntent().getIntArrayExtra("userAnswers");
-        correctCount = getIntent().getIntExtra("correctCount", 0);
-
-        // Validate data
-        if (quiz == null || userAnswers == null) {
-            Toast.makeText(this, "Lỗi: Không nhận được dữ liệu quiz", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
+        getDataFromIntent();
         displayResults();
-        saveQuizResult();
-
-        btnViewAnswers.setOnClickListener(v -> showWrongAnswers());
-        btnHome.setOnClickListener(v -> goHome());
+        setupListeners();
     }
 
     private void initViews() {
-        ivTrophy = findViewById(R.id.iv_trophy);
         tvScore = findViewById(R.id.tv_score);
+        tvPercentage = findViewById(R.id.tv_percentage);
         tvMessage = findViewById(R.id.tv_message);
-        progressCircular = findViewById(R.id.progress_circular);
-        cardWrongAnswers = findViewById(R.id.card_wrong_answers);
-        rvWrongAnswers = findViewById(R.id.rv_wrong_answers);
+        tvCorrectCount = findViewById(R.id.tv_correct_count);
+        tvWrongCount = findViewById(R.id.tv_wrong_count);
         btnViewAnswers = findViewById(R.id.btn_view_answers);
         btnHome = findViewById(R.id.btn_home);
+        cardAnswersDetail = findViewById(R.id.card_answers_detail);
+        rvAnswersDetail = findViewById(R.id.rv_answers_detail);
+        tvToggleDetail = findViewById(R.id.tv_toggle_detail);
+    }
+
+    private void getDataFromIntent() {
+        Intent intent = getIntent();
+        questions = intent.getParcelableArrayListExtra("questions");
+        userAnswers = intent.getIntArrayExtra("userAnswers");
+        score = intent.getIntExtra("score", 0);
+        totalQuestions = intent.getIntExtra("totalQuestions", 0);
+
+        // Validate data
+        if (questions == null) {
+            questions = new ArrayList<>();
+        }
+        if (userAnswers == null) {
+            userAnswers = new int[questions.size()];
+            for (int i = 0; i < userAnswers.length; i++) {
+                userAnswers[i] = -1;
+            }
+        }
+        if (totalQuestions == 0) {
+            totalQuestions = questions.size();
+        }
     }
 
     private void displayResults() {
-        int total = quiz.getQuestions().size();
-
-        // Display score with animation
-        tvScore.setText(String.format("%d/%d", correctCount, total));
-        animateScore();
+        // Display score
+        tvScore.setText(String.format(Locale.getDefault(), "%d/%d", score, totalQuestions));
 
         // Calculate percentage
-        int percentage = (int) ((correctCount * 100.0) / total);
-        progressCircular.setProgress(percentage);
+        int percentage = totalQuestions > 0 ? (score * 100) / totalQuestions : 0;
+        tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", percentage));
 
-        // Display message based on score
+        // Display counts
+        int wrongCount = totalQuestions - score;
+        tvCorrectCount.setText(String.valueOf(score));
+        tvWrongCount.setText(String.valueOf(wrongCount));
+
+        // Display message based on percentage
         String message;
-        if (percentage >= 80) {
-            message = "Xuất sắc! Bạn đã làm rất tốt!";
-        } else if (percentage >= 60) {
-            message = "Tốt lắm! Bạn đang tiến bộ!";
-        } else if (percentage >= 40) {
-            message = "Cố gắng lên! Bạn có thể làm tốt hơn!";
+        if (percentage >= 90) {
+            message = "Xuất sắc! 🎉";
+        } else if (percentage >= 70) {
+            message = "Tốt lắm! 👍";
+        } else if (percentage >= 50) {
+            message = "Cố gắng hơn nhé! 💪";
         } else {
-            message = "Đừng nản chí! Hãy thử lại nhé!";
+            message = "Hãy ôn tập thêm! 📚";
         }
         tvMessage.setText(message);
+
+        // Setup RecyclerView for answer details
+        setupAnswersList();
     }
 
-    private void animateScore() {
-        ScaleAnimation scaleAnimation = new ScaleAnimation(
-            0.0f, 1.0f, 0.0f, 1.0f,
-            Animation.RELATIVE_TO_SELF, 0.5f,
-            Animation.RELATIVE_TO_SELF, 0.5f
-        );
-        scaleAnimation.setDuration(500);
-        scaleAnimation.setFillAfter(true);
-        tvScore.startAnimation(scaleAnimation);
-
-        // Also animate trophy
-        ivTrophy.startAnimation(scaleAnimation);
+    private void setupAnswersList() {
+        if (questions != null && !questions.isEmpty()) {
+            QuizAnswerReviewAdapter adapter = new QuizAnswerReviewAdapter(questions, userAnswers);
+            rvAnswersDetail.setLayoutManager(new LinearLayoutManager(this));
+            rvAnswersDetail.setAdapter(adapter);
+            rvAnswersDetail.setNestedScrollingEnabled(false);
+        }
     }
 
-    private void saveQuizResult() {
-        String userId = FirebaseAuth.getInstance().getCurrentUser() != null ?
-            FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+    private void setupListeners() {
+        // View answers button
+        btnViewAnswers.setOnClickListener(v -> toggleAnswersDetail());
 
-        QuizResult result = new QuizResult(
-            UUID.randomUUID().toString(),
-            quiz.getId(),
-            userId,
-            correctCount,
-            quiz.getQuestions().size(),
-            userAnswers,
-            Timestamp.now()
-        );
+        // Toggle detail text (collapse button)
+        tvToggleDetail.setOnClickListener(v -> toggleAnswersDetail());
 
-        repository.saveQuizResult(result, new FirebaseQuizRepository.RepositoryCallback<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                // Saved successfully
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(QuizResultActivity.this,
-                    "Không thể lưu kết quả: " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-            }
+        // Home button
+        btnHome.setOnClickListener(v -> {
+            Intent intent = new Intent(QuizResultActivity.this, HomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
         });
     }
 
-    private void showWrongAnswers() {
-        if (cardWrongAnswers.getVisibility() == View.VISIBLE) {
-            cardWrongAnswers.setVisibility(View.GONE);
-            btnViewAnswers.setText("Xem đáp án");
+    private void toggleAnswersDetail() {
+        if (cardAnswersDetail.getVisibility() == View.GONE) {
+            // Show answers
+            cardAnswersDetail.setVisibility(View.VISIBLE);
+            btnViewAnswers.setText(R.string.hide_answers_detail);
+            btnViewAnswers.setIconResource(android.R.drawable.ic_menu_close_clear_cancel);
+            tvToggleDetail.setText(R.string.collapse);
         } else {
-            cardWrongAnswers.setVisibility(View.VISIBLE);
-            btnViewAnswers.setText("Ẩn đáp án");
-            setupWrongAnswersRecyclerView();
+            // Hide answers
+            cardAnswersDetail.setVisibility(View.GONE);
+            btnViewAnswers.setText(R.string.view_answers_detail);
+            btnViewAnswers.setIconResource(android.R.drawable.ic_menu_view);
+            tvToggleDetail.setText(R.string.view_detail);
         }
     }
 
-    private void setupWrongAnswersRecyclerView() {
-        rvWrongAnswers.setLayoutManager(new LinearLayoutManager(this));
-        QuizAnswerReviewAdapter adapter = new QuizAnswerReviewAdapter(
-                quiz.getQuestions(),
-                userAnswers
-        );
-        rvWrongAnswers.setAdapter(adapter);
-    }
-
-    private void goHome() {
-        Intent intent = new Intent(this, HomeActivity.class);
+    @Override
+    public void onBackPressed() {
+        // Go back to home when back button is pressed
+        Intent intent = new Intent(QuizResultActivity.this, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
+        super.onBackPressed();
     }
 }

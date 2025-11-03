@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".App"
@@ -81,6 +82,11 @@
 
         <activity
             android:name=".ui.QuizResultActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.QuizAnswerDetailActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<set xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- Slide up animation -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="400"
+    android:interpolator="@android:anim/overshoot_interpolator">
     <translate
-        android:fromYDelta="20%"
-        android:toYDelta="0%"
-        android:duration="400"
-        android:interpolator="@android:anim/decelerate_interpolator" />
+        android:fromYDelta="100%"
+        android:toYDelta="0"/>
     <alpha
         android:fromAlpha="0.0"
         android:toAlpha="1.0"
-        android:duration="400" />
+        android:duration="300"/>
 </set>
 

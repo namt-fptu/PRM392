@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty state illustration placeholder -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Empty folder illustration -->
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M80,60h40l10,15h40c5.5,0 10,4.5 10,10v70c0,5.5 -4.5,10 -10,10H30c-5.5,0 -10,-4.5 -10,-10V70c0,-5.5 4.5,-10 10,-10h50V60z"
+        android:fillAlpha="0.3"/>
+    <path
+        android:strokeColor="@color/text_secondary"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M80,60h40l10,15h40c5.5,0 10,4.5 10,10v70c0,5.5 -4.5,10 -10,10H30c-5.5,0 -10,-4.5 -10,-10V70c0,-5.5 4.5,-10 10,-10h50V60z"/>
+</vector>
+

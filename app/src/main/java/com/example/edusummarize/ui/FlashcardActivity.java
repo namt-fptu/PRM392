@@ -96,34 +96,55 @@ public class FlashcardActivity extends AppCompatActivity {
 
     private void onRateCurrent(String rating) {
         int pos = viewPager.getCurrentItem();
-        if (adapter == null) return;
+        if (adapter == null || adapter.getItemCount() == 0) {
+            Toast.makeText(this, "Không có flashcard để đánh giá", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Flashcard card = adapter.getCardAt(pos);
-        if (card == null) return;
+        if (card == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy flashcard", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Disable buttons while processing
+        setButtonsEnabled(false);
 
         // Update review in Firestore
         repository.updateReview(card.getId(), rating, new FirebaseFlashcardRepository.RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 runOnUiThread(() -> {
-                    Toast.makeText(FlashcardActivity.this, "Saved: " + rating, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FlashcardActivity.this, "Đã lưu: " + rating, Toast.LENGTH_SHORT).show();
                     // remove card and advance
                     adapter.removeCardAt(pos);
                     if (adapter.getItemCount() == 0) {
-                        Toast.makeText(FlashcardActivity.this, "You're done for now!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(FlashcardActivity.this, "Bạn đã hoàn thành! 🎉", Toast.LENGTH_LONG).show();
                         finish();
                     } else {
                         int next = Math.min(pos, adapter.getItemCount() - 1);
                         viewPager.setCurrentItem(next, true);
                         updateProgress();
+                        setButtonsEnabled(true);
                     }
                 });
             }
 
             @Override
             public void onFailure(Exception e) {
-                runOnUiThread(() -> Toast.makeText(FlashcardActivity.this, "Failed to save review: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> {
+                    Toast.makeText(FlashcardActivity.this, "Lỗi lưu đánh giá: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    setButtonsEnabled(true);
+                });
             }
         });
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        btnAgain.setEnabled(enabled);
+        btnHard.setEnabled(enabled);
+        btnGood.setEnabled(enabled);
+        btnEasy.setEnabled(enabled);
     }
 
     @Override

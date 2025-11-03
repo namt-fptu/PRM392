@@ -1,39 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">EduSummarize</string>
 
-    <!-- Login & Register -->
-    <string name="login">Đăng nhập</string>
-    <string name="register">Đăng ký</string>
-    <string name="email">Email</string>
-    <string name="password">Mật khẩu</string>
-    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <!-- Common strings -->
+    <string name="status_icon">Status Icon</string>
+    <string name="success_message">Thành công!</string>
+    <string name="loading">Đang tải...</string>
+    <string name="empty_state">Empty State</string>
+    <string name="no_data">Không có dữ liệu</string>
+    <string name="no_data_message">Chưa có dữ liệu để hiển thị</string>
 
-    <!-- Home -->
-    <string name="home">Trang chủ</string>
-    <string name="scan_document">Quét tài liệu</string>
-    <string name="library">Thư viện</string>
+    <!-- Flashcard Stats -->
+    <string name="not_signed_in">Bạn chưa đăng nhập</string>
+    <string name="due_count">Cần ôn: %d thẻ</string>
+    <string name="failed_load_due">Lỗi tải thẻ cần ôn: %s</string>
+    <string name="learned_today_count">Đã học hôm nay: %d thẻ</string>
+    <string name="failed_load_stats">Lỗi tải thống kê: %s</string>
 
-    <!-- Summarize -->
-    <string name="choose_source">Chọn nguồn tài liệu</string>
-    <string name="camera">Chụp ảnh</string>
-    <string name="gallery">Thư viện ảnh</string>
-    <string name="pdf_file">File PDF</string>
-    <string name="docx_file">File DOCX</string>
-    <string name="summarize">Tóm tắt</string>
-    <string name="create_audio">Tạo audio và lưu</string>
+    <!-- Quiz Result -->
+    <string name="quiz_result_title">Kết quả Quiz</string>
+    <string name="correct_answers">Đúng</string>
+    <string name="wrong_answers">Sai</string>
+    <string name="view_answers_detail">Xem chi tiết đáp án</string>
+    <string name="hide_answers_detail">Ẩn chi tiết đáp án</string>
+    <string name="view_detail">Xem chi tiết ▼</string>
+    <string name="collapse">Thu gọn ▲</string>
+    <string name="back_to_home">Về trang chủ</string>
+    <string name="answers_detail">Chi tiết các câu trả lời</string>
 
-    <!-- Common -->
-    <string name="cancel">Hủy</string>
-    <string name="ok">OK</string>
-    <string name="close">Đóng</string>
-    <string name="logout">Đăng xuất</string>
-    <string name="search">Tìm kiếm</string>
-
-    <!-- Flashcard stats strings -->
-    <string name="not_signed_in">Chưa đăng nhập</string>
-    <string name="due_count">Due: %1$d</string>
-    <string name="learned_today_count">Learned today: %1$d</string>
-    <string name="failed_load_due">Failed to load due: %1$s</string>
-    <string name="failed_load_stats">Failed to load stats: %1$s</string>
+    <!-- Quiz Answer Review -->
+    <string name="question_number">Câu %d</string>
+    <string name="your_answer">Câu trả lời của bạn:</string>
+    <string name="correct_answer">Đáp án đúng:</string>
+    <string name="explanation">Giải thích:</string>
+    <string name="no_explanation">Không có giải thích</string>
+    <string name="not_answered">Chưa trả lời</string>
 </resources>
